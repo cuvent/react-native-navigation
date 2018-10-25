@@ -83,7 +83,7 @@ static NSString* const setDefaultOptions	= @"setDefaultOptions";
 	[_controllerFactory setDefaultOptionsDict:optionsDict];
 }
 
-- (void)push:(NSString*)componentId layout:(NSDictionary*)layout completion:(RNNTransitionCompletionBlock)completion rejection:(RCTPromiseRejectBlock)rejection {
+- (void)push:(NSString*)componentId layout:(NSDictionary*)layout completion:(RNNTransitionWithComponentIdCompletionBlock)completion rejection:(RCTPromiseRejectBlock)rejection {
 	[self assertReady];
 	
 	RNNRootViewController *newVc = (RNNRootViewController *)[_controllerFactory createLayoutAndSaveToStore:layout];
@@ -103,7 +103,7 @@ static NSString* const setDefaultOptions	= @"setDefaultOptions";
 					[CATransaction begin];
 					[CATransaction setCompletionBlock:^{
 						[self->_eventEmitter sendOnNavigationCommandCompletion:push params:@{@"componentId": componentId}];
-						completion();
+						completion(newVc.componentId);
 					}];
 					[rvc.navigationController pushViewController:newVc animated:YES];
 					[CATransaction commit];
@@ -134,7 +134,7 @@ static NSString* const setDefaultOptions	= @"setDefaultOptions";
 		[newVc waitForReactViewRender:(newVc.options.animations.push.waitForRender || animationDelegate) perform:^{
 			[_stackManager push:newVc onTop:fromVC animated:newVc.options.animations.push.enable animationDelegate:animationDelegate completion:^{
 				[_eventEmitter sendOnNavigationCommandCompletion:push params:@{@"componentId": componentId}];
-				completion();
+				completion(newVc.componentId);
 			} rejection:rejection];
 		}];
 	}
